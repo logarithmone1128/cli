@@ -237,7 +237,10 @@ func buildInternalWithConfig(ctx context.Context, inv cmdutil.InvocationContext,
 
 	rootCmd.SetContext(ctx)
 	rootCmd.SetIn(cfg.streams.In)
-	rootCmd.SetOut(cfg.streams.Out)
+	// Cobra renders framework output such as --version through this writer,
+	// before it reaches any command callback. Type a writer failure at that
+	// boundary so a broken stdout pipe is never reported as invalid input.
+	rootCmd.SetOut(internalErrorWriter{Writer: f.IOStreams.Out})
 	rootCmd.SetErr(cfg.streams.ErrOut)
 
 	// Root-only usage template (curated Usage synopsis + skills footer); see
@@ -371,10 +374,18 @@ func buildInternalWithConfig(ctx context.Context, inv cmdutil.InvocationContext,
 	if hookRegistry != nil {
 		installHooks(rootCmd, hookRegistry)
 	}
+
 	if hasConcealedCommands {
 		installHelpCommand(rootCmd)
 	}
 	finalizeRootCommandGroups(rootCmd, runtime.surface)
+
+	// Type errors only after the command tree is final. Plugin wrappers are
+	// therefore inside the execution boundary (a wrapper failure is internal),
+	// while the concealment-specific help command is covered without exposing
+	// it to plugins. The stateless wrappers also make repeated Execute calls on
+	// a Build-produced tree independent.
+	instrumentErrorBoundaries(rootCmd)
 
 	if hookRegistry != nil && !cfg.deferStartup {
 		if err := emitStartup(ctx, hookRegistry); err != nil {
@@ -390,5 +401,6 @@ func buildInternalWithConfig(ctx context.Context, inv cmdutil.InvocationContext,
 
 func finalizeFailedBuild(runtime *buildRuntime, root *cobra.Command) (*buildRuntime, *cobra.Command, *hook.Registry) {
 	finalizeRootCommandGroups(root, runtime.surface)
+	instrumentErrorBoundaries(root)
 	return runtime, root, nil
 }
