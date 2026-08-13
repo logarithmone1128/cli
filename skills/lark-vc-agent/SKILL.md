@@ -43,6 +43,7 @@ metadata:
 | "会议现在还开着，谁刚加入了"、"会议里谁在发言"、"有人共享屏幕吗"（**进行中会议**）             | **本 skill** `+meeting-events`                                                                                                                         |
 | "我/某个用户现在在哪个会里"、"给我找当前可拉事件的 meeting_id"                         | **本 skill** `+meeting-list-active`                                                                                                                     |
 | "在会里发一句 xx"、"提示大家 xx"、"反馈听不到/看不到/声音清楚/效果不错"（**进行中会议**） | **本 skill** `+meeting-message-send`                                                                                                                     |
+| "截一张当前会议的最终混流画面"、"获取会议当前截图"（**进行中且录制中**） | **本 skill** `+meeting-screenshot`                                                                                                                        |
 | "退出会议"、"让机器人离开"                                            | **本 skill** `+meeting-leave`                                                                                                                          |
 | "昨天那场会有谁参加过"、"搜昨天的会"、"查纪要/逐字稿/录制"                          | [`lark-vc`](../lark-vc/SKILL.md)                                                                                                                      |
 | "帮我参会，结束后把纪要发到群" 等跨阶段场景                                    | 按序编排：本 skill（入会 → 读事件）→ 会议结束后用 [`lark-vc`](../lark-vc/SKILL.md) / [`lark-minutes`](../lark-minutes/SKILL.md) 拉纪要 → [`lark-im`](../lark-im/SKILL.md) 发群 |
@@ -179,15 +180,17 @@ Shortcut 是对常用操作的高级封装（`lark-cli vc +<verb> [flags]`）。
 | Shortcut                                                        | 类型 | 说明                                                                         |
 | --------------------------------------------------------------- | -- | -------------------------------------------------------------------------- |
 | [`+meeting-join`](references/lark-vc-agent-meeting-join.md)     | 写  | Join an in-progress meeting by 9-digit meeting number                      |
-| [`+meeting-list-active`](../lark-vc/references/lark-vc-meeting-list-active.md) | 读  | List active meetings and discover meeting_id for event reads               |
-| [`+meeting-events`](../lark-vc/references/lark-vc-meeting-events.md) | 读  | List meeting events visible to the current identity (participant, transcript, chat, share, document context) |
-| [`+meeting-message-send`](../lark-vc/references/lark-vc-meeting-message-send.md) | 写  | Send an in-meeting text message or reaction emoji                          |
+| [`+meeting-list-active`](references/lark-vc-agent-meeting-list-active.md) | 读  | List active meetings and discover meeting_id for event reads               |
+| [`+meeting-events`](references/lark-vc-agent-meeting-events.md) | 读  | List meeting events visible to the app agent (participant joined/left, transcript, chat, share) |
+| [`+meeting-message-send`](references/lark-vc-agent-meeting-message-send.md) | 写  | Send an in-meeting text message or reaction emoji                          |
+| [`+meeting-screenshot`](references/lark-vc-agent-meeting-screenshot.md) | 读  | Save the current final composite screenshot of an ongoing recorded meeting |
 | [`+meeting-leave`](references/lark-vc-agent-meeting-leave.md)   | 写  | Leave a meeting by meeting\_id                                             |
 
 - [`+meeting-join`](references/lark-vc-agent-meeting-join.md)：入参格式、写操作可见性风险、入会失败排查。
-- [`+meeting-list-active`](../lark-vc/references/lark-vc-meeting-list-active.md)：用户身份和应用身份的不同返回范围。
-- [`+meeting-events`](../lark-vc/references/lark-vc-meeting-events.md)：`meeting_id` 来源、身份延续、分页和错误码（10005 / 20001 / 20002）。
-- [`+meeting-message-send`](../lark-vc/references/lark-vc-meeting-message-send.md)：会中文本、完整 `emoji_type` 列表、身份延续和写操作风险。
+- [`+meeting-list-active`](references/lark-vc-agent-meeting-list-active.md)：用户身份和应用身份的不同返回范围。
+- [`+meeting-events`](references/lark-vc-agent-meeting-events.md)：`meeting_id` 来源、身份延续、分页和错误码（10005 / 20001 / 20002）。
+- [`+meeting-message-send`](references/lark-vc-agent-meeting-message-send.md)：会中文本、完整 `emoji_type` 列表、身份延续和写操作风险。
+- [`+meeting-screenshot`](references/lark-vc-agent-meeting-screenshot.md)：进行中录制会议的最终混流 JPEG 截图、文件落盘和覆盖规则。
 - [`+meeting-leave`](references/lark-vc-agent-meeting-leave.md)：`meeting_id` 的来源与写操作可见性。
 
 ## 应用身份权限配置检查
